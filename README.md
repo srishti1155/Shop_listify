@@ -55,7 +55,8 @@ To get the development environment running, follow these steps:
    
 3. **Add Item Page**
 
-    - llows users to add items from a given set of categories.
+    - Allows users to add items from a given set of categories.
+
 
 
 
