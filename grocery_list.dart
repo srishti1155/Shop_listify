@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shop_listify/data/categories.dart';
 import 'package:shop_listify/models/grocery_item.dart';
 import 'package:shop_listify/widgets/new_item.dart';
+import 'package:shop_listify/widgets/edit_item.dart';
 
 class GroceryList extends  StatefulWidget {
   const GroceryList({super.key});
@@ -67,6 +68,42 @@ class GroceryList extends  StatefulWidget {
       });
     }
     }
+
+   void _editItem(GroceryItem item) async {
+     final editedItem = await Navigator.of(context).push<GroceryItem>(
+       MaterialPageRoute(builder: (ctx) => EditItem(item: item)),
+     );
+
+     if (editedItem == null) {
+       return;
+     }
+
+     final url = Uri.https(
+       'shop-listify-default-rtdb.firebaseio.com',
+       'shopping-list/${item.id}.json',
+     );
+
+     final response = await http.patch(
+       url,
+       body: json.encode({
+         'name': editedItem.name,
+         'quantity': editedItem.quantity,
+         'category': editedItem.category.title,
+       }),
+     );
+
+     if (response.statusCode >= 400) {
+       // Handle error
+       return;
+     }
+
+     setState(() {
+       final index = _groceryItems.indexWhere((element) => element.id == item.id);
+       _groceryItems[index] = editedItem;
+     });
+   }
+
+
 
    void _addItem() async {
       final newItem = await Navigator.of(context).push<GroceryItem>(
@@ -134,13 +171,22 @@ class GroceryList extends  StatefulWidget {
                      _groceryItems[index].category.emoji,
                      style: const TextStyle(fontSize: 24),
                    ),
-                   trailing: Text(
-                       _groceryItems[index].quantity.toString(),
-                     style: const TextStyle(fontWeight: FontWeight.bold),
+                   trailing: Row(
+                       mainAxisSize: MainAxisSize.min,
+                       children: [
+                   Text(
+                   _groceryItems[index].quantity.toString(),
+                   style: const TextStyle(fontWeight: FontWeight.bold),
+                 ),
+                     IconButton(
+                       icon: const Icon(Icons.edit_note),
+                       onPressed: () => _editItem(_groceryItems[index]),
 
                    ),
-                 ),
+                 ],
                )
+               )
+        )
                )
        );
      }
